@@ -11,20 +11,31 @@ parser.add_argument('infile2', nargs='?', type = argparse.FileType('r'), help = 
 args = parser.parse_args()
 
 
-groups = []
-pron = []
+groups = {}
+pron = {}
 
 
-def take_num(fd, mas):
-    for line in fd:
-        line = line.strip().split('\t')
-        mas.append(line[0])  
-
-take_num(args.infile1, groups)
-take_num(args.infile2, pron)         
+for s in args.infile1:                 # dict group_id : max token 
+    if not s.rstrip('\r\n'):
+        continue                     
+    s = s.strip().split('\t')
+    groups[int(s[0])] = int(max(s[1].split(',')))
 
 
-result = itertools.product(groups, pron)
+for line in args.infile2:              # dict pron_id : token number
+    if not line.rstrip('\r\n'):
+        continue
+    line = line.strip().split('\t')
+    pron[int(line[0])] = int(line[1])
+ 
+
+group_keys = sorted(groups.keys())
+pronoun_keys = sorted(pron.keys())
+
+
+result = itertools.product(group_keys, pronoun_keys)
 for i in result:
-    sys.stdout.write('{0}__{1}'.format(i[0], i[1]) + '\n')
-
+    if groups[i[0]] < pron[i[1]]:
+        sys.stdout.write('{0}__{1}'.format(str(i[0]), str(i[1]) + '\n'))
+    if groups[i[0]] > pron[i[1]]:
+        continue     
