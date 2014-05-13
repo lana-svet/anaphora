@@ -18,12 +18,16 @@ first_num = []
 second_num = []
 tops = {}
 token_num = []
+positions = {'/p':[]}
+d = {}
 
 
 for line in args.infile1:                       # списки первых и вторых цифр из пар
     match = pattern.search(line)
+    if not line.rstrip('\r\n'):
+        continue 
     first_num.append(match.group(1))            
-    second_num.append(match.group(2)) 
+    second_num.append(match.group(2))
           
        
 for s in args.infile2:                          # словарь вида ИГ - вершина
@@ -34,18 +38,30 @@ for s in args.infile2:                          # словарь вида ИГ -
         tops[s[0]] = s[2]
 
 
-for r in args.infile3:                          # список тэгов и номеров токенов
+for r in args.infile3:                         # список тэгов и номеров токенов
     r = r.strip().split('\t')
     token_num.append(r[0])
+
+for i in range(len(token_num)):
+    if token_num[i] == '/p':
+        positions['/p'].append(i)
+    else:
+        positions[token_num[i]] = i
+ 
 
         
 for i in range(len(first_num)):                
     first_top = tops[first_num[i]]              # определение вершины ИГ
     second_top = tops[second_num[i]]            
-    start = token_num.index(first_top)          # индекс номеров вершин в списке токенов 
-    end = token_num.index(second_top)
-    par = 0
-    for l in range(start, end):
-        if '/p' in token_num[l]:
-            par += 1
-    sys.stdout.write(first_num[i] + '_' + second_num[i] + "  " + str(par) + '\n')
+    f_p = positions[str(first_top)]
+    s_p = positions[str(second_top)]
+
+    count = 0
+
+    for j in range(len(positions['/p'])):
+        if positions['/p'][j] > s_p :
+            break
+        if positions['/p'][j] > f_p :
+            count += 1
+    sys.stdout.write(first_num[i] + '_' + second_num[i] + "  " + str(count) + '\n')
+
